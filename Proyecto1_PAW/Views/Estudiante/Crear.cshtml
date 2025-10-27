@@ -1,0 +1,218 @@
+﻿@model Proyecto1_PAW.Models.EstudianteDto
+@{
+    ViewBag.Title = "Registrar Estudiante";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    h2 {
+        color: #004a99;
+        margin-bottom: 20px;
+    }
+
+    form {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 20px 30px;
+        border-radius: 6px;
+        max-width: 500px;
+    }
+
+    label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-top: 5px;
+    }
+
+    button {
+        background-color: #004a99;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        margin-top: 15px;
+        cursor: pointer;
+    }
+
+        button:hover {
+            background-color: #0066cc;
+        }
+
+    #mensaje {
+        color: green;
+        margin-bottom: 10px;
+    }
+
+    span[id^="err"] {
+        font-size: 13px;
+        color: red;
+    }
+
+    .volver {
+        margin-bottom: 20px;
+    }
+
+        .volver a {
+            text-decoration: none;
+            color: #004a99;
+        }
+
+            .volver a:hover {
+                text-decoration: underline;
+            }
+</style>
+
+<div class="volver">
+    <a href="/Panel/Index">← Volver al panel principal</a>
+</div>
+
+<h2>Registrar estudiante</h2>
+
+<div id="mensaje">@ViewBag.Mensaje</div>
+
+<form id="formEstudiante">
+    <label>Nombre*:</label>
+    <input type="text" id="nombre" name="nombre" />
+    <span id="errNombre"></span>
+
+    <label>Apellidos*:</label>
+    <input type="text" id="apellidos" name="apellidos" />
+    <span id="errApellidos"></span>
+
+    <label>Identificación*:</label>
+    <input type="text" id="identificacion" name="identificacion" />
+    <span id="errIdent"></span>
+
+    <label>Fecha de nacimiento*:</label>
+    <input type="date" id="fechaNacimiento" name="fechaNacimiento" />
+    <span id="errFecha"></span>
+
+    <label>Provincia*:</label>
+    <input type="text" id="provincia" name="provincia" />
+    <span id="errProv"></span>
+
+    <label>Cantón*:</label>
+    <input type="text" id="canton" name="canton" />
+    <span id="errCanton"></span>
+
+    <label>Distrito*:</label>
+    <input type="text" id="distrito" name="distrito" />
+    <span id="errDistrito"></span>
+
+    <label>Correo*:</label>
+    <input type="email" id="correo" name="correo" />
+    <span id="errCorreo"></span>
+
+    <label>Cuatrimestre*:</label>
+    <select id="cuatrimestre" name="cuatrimestre">
+        <option value="">--Seleccione--</option>
+        @foreach (var c in ViewBag.Cuatrimestres as List<KeyValuePair<int, string>>)
+        {
+            <option value="@c.Key">@c.Value</option>
+        }
+    </select>
+    <span id="errCuatr"></span>
+
+    <div id="cursosContainer" style="display:none;">
+        <strong>Cursos disponibles (marque los matriculados):</strong><br />
+        <div id="listaCursos"></div>
+    </div>
+
+    <button type="button" id="btnEnviar">Registrar</button>
+</form>
+
+
+<script>
+    $('#cuatrimestre').change(function () {
+        var id = $(this).val();
+        $('#listaCursos').empty();
+        if (!id) { $('#cursosContainer').hide(); return; }
+        $.getJSON('/Estudiante/CursosPorCuatrimestre', { cuatrimestreId: id }, function (data) {
+            if (data && data.length) {
+                $('#cursosContainer').show();
+                data.forEach(function (c) {
+                    var chk = $('<label><input type="checkbox" class="cursoChk" value="' + c.id + '"/> ' + c.nombre + '</label><br/>');
+                    $('#listaCursos').append(chk);
+                });
+            } else {
+                $('#cursosContainer').hide();
+            }
+        });
+    });
+
+    function limpiarErrores() {
+        $('#mensaje').text('');
+        $('#errNombre,#errApellidos,#errIdent,#errFecha,#errProv,#errCanton,#errDistrito,#errCorreo,#errCuatr').text('');
+    }
+
+    function validarCliente() {
+        limpiarErrores();
+        var ok = true;
+        if (!$('#nombre').val().trim()) { $('#errNombre').text('Requerido'); ok = false; }
+        if (!$('#apellidos').val().trim()) { $('#errApellidos').text('Requerido'); ok = false; }
+        if (!$('#identificacion').val().trim()) { $('#errIdent').text('Requerido'); ok = false; }
+        if (!$('#fechaNacimiento').val()) { $('#errFecha').text('Requerido'); ok = false; }
+        if (!$('#provincia').val().trim()) { $('#errProv').text('Requerido'); ok = false; }
+        if (!$('#canton').val().trim()) { $('#errCanton').text('Requerido'); ok = false; }
+        if (!$('#distrito').val().trim()) { $('#errDistrito').text('Requerido'); ok = false; }
+        var email = $('#correo').val().trim();
+        if (!email) { $('#errCorreo').text('Requerido'); ok = false; }
+        else {
+            var re = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+            if (!re.test(email)) { $('#errCorreo').text('Formato inválido'); ok = false; }
+        }
+        if (!$('#cuatrimestre').val()) { $('#errCuatr').text('Seleccione cuatrimestre'); ok = false; }
+        return ok;
+    }
+
+    $('#btnEnviar').click(function () {
+        if (!validarCliente()) return;
+
+        var cursos = [];
+        $('.cursoChk:checked').each(function () { cursos.push(parseInt($(this).val())); });
+
+        var payload = {
+            Nombre: $('#nombre').val().trim(),
+            Apellidos: $('#apellidos').val().trim(),
+            Identificacion: $('#identificacion').val().trim(),
+            FechaNacimiento: $('#fechaNacimiento').val(),
+            Provincia: $('#provincia').val().trim(),
+            Canton: $('#canton').val().trim(),
+            Distrito: $('#distrito').val().trim(),
+            Correo: $('#correo').val().trim(),
+            CuatrimestreId: parseInt($('#cuatrimestre').val()),
+            CursosMatriculados: cursos
+        };
+
+        $.ajax({
+            url: '/Estudiante/CrearAjax',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(payload),
+            success: function (res) {
+                if (res.success) {
+                    $('#mensaje').css('color', 'green').text(res.message);
+                    $('#formEstudiante')[0].reset();
+                    $('#cursosContainer').hide();
+                } else {
+                    $('#mensaje').css('color', 'red').text(res.message);
+                }
+            },
+            error: function () {
+                $('#mensaje').css('color', 'red').text('Error de conexión al servidor.');
+            }
+        });
+    });
+</script>

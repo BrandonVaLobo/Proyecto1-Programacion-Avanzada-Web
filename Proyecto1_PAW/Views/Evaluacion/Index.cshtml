@@ -1,0 +1,255 @@
+﻿@{
+    ViewBag.Title = "Evaluación Académica";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Evaluación Académica</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 20px;
+        }
+
+        a {
+            color: #004a99;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        li a {
+            display: inline-block;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        h2 {
+            color: #004a99;
+            margin-top: 0;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 12px;
+        }
+
+        #buscar {
+            width: 100%;
+            max-width: 520px;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-top: 6px;
+        }
+
+        #resultados {
+            margin-top: 10px;
+            max-width: 520px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        hr {
+            margin: 22px 0;
+            border: none;
+            border-top: 1px solid #e6e6e6;
+        }
+
+        #formEval {
+            max-width: 520px;
+            background: #ffffff;
+            border: 1px solid #e6e6e6;
+            padding: 14px 16px;
+            border-radius: 6px;
+        }
+
+        #formEval h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        select, input[type="number"], textarea {
+            width: 100%;
+            max-width: 520px;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 6px;
+            box-sizing: border-box;
+        }
+
+        #formEval label {
+            display: block;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        #btnGuardar {
+            background-color: #004a99;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        #btnGuardar:hover {
+            background-color: #0066cc;
+        }
+
+        #mensaje {
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        @@media (max-width: 560px) {
+            body {
+                margin: 12px;
+            }
+            #formEval, #resultados, #buscar {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <li><a href="/Panel/Index">Panel Principal</a></li>
+    <h2>Evaluación académica por estudiante</h2>
+
+    <label>Buscar estudiante:</label>
+    <input type="text" id="buscar" placeholder="Nombre, apellido o identificación" />
+    <div id="resultados"></div>
+
+    <hr />
+    <div id="formEval" style="display:none;">
+        <h3>Registrar evaluación</h3>
+        <p><strong>Estudiante:</strong> <span id="nombreSel"></span></p>
+        <label>Curso:</label>
+        <select id="curso"></select><br />
+        <label>Nota (0-100):</label>
+        <input type="number" id="nota" min="0" max="100" /><br />
+        <label>Participación:</label>
+        <select id="participacion">
+            <option value="">Seleccione</option>
+            <option value="Alta">Alta</option>
+            <option value="Media">Media</option>
+            <option value="Baja">Baja</option>
+        </select><br />
+        <label>Estado:</label>
+        <select id="estado">
+            <option value="">Seleccione</option>
+            <option value="Aprobado">Aprobado</option>
+            <option value="Reprobado">Reprobado</option>
+        </select><br />
+        <label>Observaciones:</label><br />
+        <textarea id="observaciones" rows="3" cols="40"></textarea><br />
+
+        <button id="btnGuardar">Guardar Evaluación</button>
+        <div id="mensaje" style="margin-top:10px;"></div>
+    </div>
+</body>
+</html>
+
+
+<script>
+    let estudianteSel = null;
+
+    $('#buscar').on('keyup', function () {
+        var f = $(this).val();
+        if (f.length < 2) { $('#resultados').empty(); return; }
+
+        $.getJSON('/Evaluacion/Buscar', { filtro: f }, function (data) {
+            var html = '';
+            if (data.length) {
+                data.forEach(function (e) {
+                    html += `<div>
+                                    <a href="#" class="selEst"
+                                        data-id="${e.id}"
+                                        data-cuatrid="${e.cuatrimestreId}"
+                                        data-cuatrnombre="${e.cuatrimestre}">
+                                        ${e.nombre} ${e.apellidos} - ${e.identificacion} (${e.cuatrimestre})
+                                    </a>
+                                </div>`;
+                });
+            } else {
+                html = '<p>No se encontraron resultados.</p>';
+            }
+            $('#resultados').html(html);
+        });
+    });
+
+    $(document).on('click', '.selEst', function (ev) {
+        ev.preventDefault();
+        estudianteSel = {
+            id: $(this).data('id'),
+            nombre: $(this).text(),
+            cuatrId: $(this).data('cuatrid'),
+            cuatrNombre: $(this).data('cuatrnombre')
+        };
+        $('#nombreSel').text(estudianteSel.nombre);
+        $('#resultados').empty();
+        $('#formEval').show();
+
+        $.getJSON('/Estudiante/CursosPorCuatrimestre', { cuatrimestreId: estudianteSel.cuatrId }, function (data) {
+            var opciones = '<option value="">Seleccione</option>';
+            data.forEach(c => opciones += `<option value="${c.id}">${c.nombre}</option>`);
+            $('#curso').html(opciones);
+        });
+    });
+
+    $('#btnGuardar').click(function () {
+        $('#mensaje').text('');
+        if (!estudianteSel) return;
+
+        var nota = parseFloat($('#nota').val());
+        if (isNaN(nota) || nota < 0 || nota > 100) {
+            $('#mensaje').css('color', 'red').text('La nota debe estar entre 0 y 100.');
+            return;
+        }
+        if (!$('#curso').val()) { $('#mensaje').css('color', 'red').text('Seleccione curso.'); return; }
+        if (!$('#participacion').val() || !$('#estado').val()) {
+            $('#mensaje').css('color', 'red').text('Seleccione participación y estado.'); return;
+        }
+
+        var payload = {
+            EstudianteId: estudianteSel.id,
+            CursoId: parseInt($('#curso').val()),
+            CuatrimestreId: estudianteSel.cuatrId,
+            Nota: nota,
+            Observaciones: $('#observaciones').val(),
+            Participacion: $('#participacion').val(),
+            Estado: $('#estado').val()
+        };
+
+        $.ajax({
+            url: '/Evaluacion/GuardarEvaluacion',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function (res) {
+                if (res.success) {
+                    $('#mensaje').css('color', 'green').text(res.message);
+                    $('#nota, #observaciones').val('');
+                } else {
+                    $('#mensaje').css('color', 'red').text(res.message);
+                }
+            },
+            error: function () {
+                $('#mensaje').css('color', 'red').text('Error al conectar con el servidor.');
+            }
+        });
+    });
+</script>

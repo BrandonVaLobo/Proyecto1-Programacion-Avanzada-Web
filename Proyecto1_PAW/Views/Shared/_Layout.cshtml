@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - Proyecto 1 PAW</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f5f6fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #004a99;
+            color: white;
+            padding: 15px 20px;
+        }
+
+            header h1 {
+                font-size: 20px;
+                margin: 0;
+                display: inline-block;
+            }
+
+        nav {
+            float: right;
+        }
+
+            nav a {
+                color: white;
+                margin-left: 15px;
+                text-decoration: none;
+                font-size: 14px;
+            }
+
+                nav a:hover {
+                    text-decoration: underline;
+                }
+
+        .container {
+            margin-top: 30px;
+            background-color: white;
+            padding: 25px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        footer {
+            margin-top: 40px;
+            background-color: #004a99;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Proyecto 1 - Registro Académico</h1>
+        <div style="clear: both;"></div>
+    </header>
+
+    <div class="container body-content">
+        @RenderBody()
+    </div>
+
+    <footer>
+        © @DateTime.Now.Year - Proyecto 1 PAW | Sistema de Registro Académico
+    </footer>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

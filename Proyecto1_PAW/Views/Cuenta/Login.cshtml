@@ -1,0 +1,106 @@
+@{
+    ViewBag.Title = "Inicio de sesión - Docentes";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .login-container {
+        text-align: center;
+        margin-top: 40px;
+    }
+
+    .login-box {
+        display: inline-block;
+        background-color: white;
+        padding: 25px 40px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        text-align: left;
+        min-width: 300px;
+    }
+
+    h2 {
+        color: #004a99;
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        width: 100%;
+        padding: 6px 8px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    button {
+        background-color: #004a99;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        margin-top: 15px;
+        cursor: pointer;
+    }
+
+        button:hover {
+            background-color: #0066cc;
+        }
+
+    #mensaje {
+        color: red;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-box">
+        <h2>Autenticación de docente</h2>
+
+        <div id="mensaje">@ViewBag.Mensaje</div>
+
+        <form id="formLogin" method="post" action="/Cuenta/Login">
+            <label>Usuario:</label>
+            <input type="text" id="usuario" name="usuario" required />
+
+            <label>Contraseña:</label>
+            <input type="password" id="contrasena" name="contrasena" required />
+
+            <button type="submit">Ingresar</button>
+        </form>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $("#formLogin").submit(function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: '/Cuenta/LoginAjax',
+            type: 'POST',
+            data: {
+                usuario: $("#usuario").val(),
+                contrasena: $("#contrasena").val()
+            },
+            success: function (res) {
+                if (res.success) {
+                    $("#mensaje").css("color", "green").text("Inicio de sesión exitoso.");
+                    window.location.href = res.redirectUrl;
+                } else {
+                    $("#mensaje").css("color", "red").text(res.message);
+                }
+            },
+            error: function () {
+                $("#mensaje").css("color", "red").text("Error al comunicarse con el servidor.");
+            }
+        });
+    });
+</script>

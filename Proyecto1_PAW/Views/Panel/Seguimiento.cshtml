@@ -1,0 +1,162 @@
+﻿@{
+    ViewBag.Title = "Estadísticas Académicas";
+    var cuatrimestres = ViewBag.Cuatrimestres as List<KeyValuePair<int, string>>;
+    var cursos = ViewBag.Cursos as List<KeyValuePair<int, string>>;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 30px;
+        }
+
+        h2 {
+            color: #004a99;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        select, button {
+            margin-right: 15px;
+            padding: 5px 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #004a99;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background-color: #00336b;
+            }
+
+        hr {
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+        }
+
+        #resultado {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 40px;
+        }
+
+        #grafico {
+            margin-top: 25px;
+            display: none;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+
+        li a {
+            text-decoration: none;
+            color: #004a99;
+            font-weight: 600;
+        }
+
+            li a:hover {
+                text-decoration: underline;
+            }
+    </style>
+</head>
+<body>
+    <li><a href="/Panel/Index">Panel Principal</a></li>
+    <h2>Visualización de estadísticas académicas</h2>
+
+    <label>Cuatrimestre:</label>
+    <select id="cuatrimestre">
+        <option value="">--Seleccione--</option>
+        @foreach (var c in cuatrimestres)
+        {
+            <option value="@c.Key">@c.Value</option>
+        }
+    </select>
+
+    <label>Curso:</label>
+    <select id="curso">
+        <option value="">--Seleccione--</option>
+        @foreach (var c in cursos)
+        {
+            <option value="@c.Key">@c.Value</option>
+        }
+    </select>
+
+    <button id="btnVer">Ver estadísticas</button>
+    <hr />
+
+    <div id="resultado" style="margin-top:20px;"></div>
+    <canvas id="grafico" width="300" height="300"></canvas>
+</body>
+</html>
+
+
+
+<script>
+    $('#btnVer').click(function () {
+        var q = $('#cuatrimestre').val();
+        var c = $('#curso').val();
+        if (!q || !c) {
+            $('#resultado').html('<p style="color:red">Seleccione cuatrimestre y curso.</p>');
+            return;
+        }
+
+        $.getJSON('/Panel/ObtenerEstadisticas', { cuatrimestreId: q, cursoId: c }, function (res) {
+            if (!res.success) {
+                $('#resultado').html('<p style="color:red">' + res.message + '</p>');
+                $('#grafico').hide();
+                return;
+            }
+
+            var html = '<p><strong>Total de evaluaciones:</strong> ' + res.total + '</p>' +
+                '<p><strong>% Participación alta:</strong> ' + res.participacion.toFixed(1) + '%</p>' +
+                '<p><strong>% Aprobados:</strong> ' + res.aprobados.toFixed(1) + '%</p>' +
+                '<p><strong>% Reprobados:</strong> ' + res.reprobados.toFixed(1) + '%</p>';
+            $('#resultado').html(html);
+
+            $('#grafico').show();
+            var ctx = document.getElementById('grafico').getContext('2d');
+            if (window.miGrafico) window.miGrafico.destroy();
+
+            window.miGrafico = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Participación Alta', 'Aprobados', 'Reprobados'],
+                    datasets: [{
+                        data: [res.participacion, res.aprobados, res.reprobados],
+                        backgroundColor: ['#4CAF50', '#2196F3', '#F44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Indicadores de rendimiento' }
+                    }
+                }
+            });
+        });
+    });
+</script>
