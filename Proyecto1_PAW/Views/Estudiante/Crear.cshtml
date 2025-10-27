@@ -72,17 +72,21 @@
             .volver a:hover {
                 text-decoration: underline;
             }
+    #listaCursos {
+        align-items: start;
+    }
+
 </style>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Registrar Estudiante</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div id="mensaje" style="color:green"></div>
 
-<div class="volver">
-    <a href="/Panel/Index">← Volver al panel principal</a>
-</div>
-
-<h2>Registrar estudiante</h2>
-
-<div id="mensaje">@ViewBag.Mensaje</div>
-
-<form id="formEstudiante">
     <label>Nombre*:</label>
     <input type="text" id="nombre" name="nombre" />
     <span id="errNombre"></span>
@@ -131,7 +135,8 @@
     </div>
 
     <button type="button" id="btnEnviar">Registrar</button>
-</form>
+</body>
+</html>
 
 
 <script>
