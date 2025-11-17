@@ -1,0 +1,117 @@
+﻿@{
+    ViewBag.Title = "Mi Rendimiento Académico";
+}
+
+<style>
+    .filtros {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+        .filtros label {
+            margin-right: 5px;
+        }
+
+        .filtros input,
+        .filtros select,
+        .filtros button {
+            margin-right: 20px;
+        }
+
+    body, h2, div, canvas {
+        text-align: left !important;
+    }
+</style>
+
+<h2>Mi Rendimiento Académico</h2>
+
+<div class="filtros">
+    <label>Cuatrimestre:</label>
+    <select id="cuatrimestre"></select>
+
+    <label>Desde:</label>
+    <input type="date" id="fechaInicio" />
+
+    <label>Hasta:</label>
+    <input type="date" id="fechaFin" />
+
+    <button id="btnFiltrar">Filtrar</button>
+</div>
+
+<hr />
+
+<canvas id="graficoRendimiento" width="600" height="300"></canvas>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    let grafico;
+
+    $(document).ready(function () {
+        cargarCuatrimestres();
+        cargarGrafico();
+
+        $("#btnFiltrar").click(function () {
+            cargarGrafico();
+        });
+    });
+
+    function cargarCuatrimestres() {
+        $.getJSON("/Estudiante/ListarCuatrimestres", function (data) {
+            $("#cuatrimestre").empty().append('<option value="">Todos</option>');
+            $.each(data, function (i, item) {
+                $("#cuatrimestre").append('<option value="' + item.Id + '">' + item.Nombre + '</option>');
+            });
+        });
+    }
+
+    function cargarGrafico() {
+        const cuatrimestre = $("#cuatrimestre").val();
+        const inicio = $("#fechaInicio").val();
+        const fin = $("#fechaFin").val();
+
+        $.getJSON("/Rendimiento/ObtenerRendimiento", {
+            cuatrimestreId: cuatrimestre,
+            fechaInicio: inicio,
+            fechaFin: fin
+        }, function (data) {
+            if (data.length === 0) {
+                alert("No hay datos disponibles para el rango seleccionado.");
+                return;
+            }
+
+            const cursos = data.map(x => x.Curso);
+            const notas = data.map(x => x.Nota);
+
+            if (grafico) grafico.destroy();
+
+            const ctx = document.getElementById("graficoRendimiento").getContext("2d");
+            grafico = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: cursos,
+                    datasets: [{
+                        label: "Nota por curso",
+                        data: notas,
+                        fill: false,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        });
+    }
+
+    setInterval(() => {
+        cargarGrafico();
+    }, 60000);
+</script>

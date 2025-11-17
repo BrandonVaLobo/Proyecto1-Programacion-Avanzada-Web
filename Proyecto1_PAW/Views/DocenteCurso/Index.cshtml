@@ -1,0 +1,105 @@
+﻿@model List<Proyecto1_PAW.Models.AsignacionDocenteModel>
+@{
+    ViewBag.Title = "Asignaciones de Docentes";
+}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    h2 {
+        color: #004a99;
+        margin-bottom: 20px;
+    }
+
+    a {
+        color: #004a99;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+        .table th {
+            background-color: #004a99;
+            color: white;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+
+        .table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+    .btnEliminar {
+        color: red;
+        cursor: pointer;
+    }
+</style>
+
+<p>
+    <a href="/Panel/Index">Volver al Panel</a>
+</p>
+
+<h2>Asignaciones de Docentes a Cursos</h2>
+<a href="/DocenteCurso/Crear">Nueva Asignación</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Docente</th>
+            <th>Curso</th>
+            <th>Fecha de Asignación</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td>@a.DocenteNombre</td>
+                <td>@a.CursoNombre</td>
+                <td>@a.FechaAsignacion.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <a href="/DocenteCurso/Editar/@a.Id">Editar</a> |
+                    <a class="btnEliminar" data-id="@a.Id">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).on("click", ".btnEliminar", function () {
+        const id = $(this).data("id");
+        if (confirm("¿Seguro que desea eliminar esta asignación de docente?")) {
+            $.ajax({
+                url: "/DocenteCurso/Eliminar",
+                type: "POST",
+                data: { id: id },
+                success: function (resp) {
+                    alert(resp.message);
+                    if (resp.success) location.reload();
+                },
+                error: function () {
+                    alert("Error al eliminar la asignación.");
+                }
+            });
+        }
+    });
+</script>

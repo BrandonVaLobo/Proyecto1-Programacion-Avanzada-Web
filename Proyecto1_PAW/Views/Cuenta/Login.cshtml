@@ -68,10 +68,16 @@
 
         <form id="formLogin" method="post" action="/Cuenta/Login">
             <label>Usuario:</label>
-            <input type="text" id="usuario" name="usuario" required />
+            <input type="text" id="usuario" required /><br />
 
             <label>Contraseña:</label>
-            <input type="password" id="contrasena" name="contrasena" required />
+            <input type="password" id="contrasena" required /><br />
+
+            <label>Tipo de usuario:</label>
+            <select id="tipo">
+                <option value="docente">Docente</option>
+                <option value="estudiante">Estudiante</option>
+            </select><br />
 
             <button type="submit">Ingresar</button>
         </form>
@@ -84,22 +90,22 @@
     $("#formLogin").submit(function (e) {
         e.preventDefault();
         $.ajax({
-            url: '/Cuenta/LoginAjax',
-            type: 'POST',
+            url: "/Cuenta/LoginAjax",
+            type: "POST",
             data: {
                 usuario: $("#usuario").val(),
-                contrasena: $("#contrasena").val()
+                contrasena: $("#contrasena").val(),
+                tipo: $("#tipo").val()
             },
-            success: function (res) {
-                if (res.success) {
-                    $("#mensaje").css("color", "green").text("Inicio de sesión exitoso.");
-                    window.location.href = res.redirectUrl;
+            success: function (resp) {
+                if (resp.success) {
+                    window.location.href = resp.redirectUrl;
                 } else {
-                    $("#mensaje").css("color", "red").text(res.message);
+                    $("#mensaje").text(resp.message).css("color", "red");
                 }
             },
             error: function () {
-                $("#mensaje").css("color", "red").text("Error al comunicarse con el servidor.");
+                $("#mensaje").text("Error en el servidor.").css("color", "red");
             }
         });
     });

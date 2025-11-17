@@ -1,0 +1,173 @@
+﻿@{
+    ViewBag.Title = "Historial Académico";
+}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    h2 {
+        color: #004a99;
+        margin-bottom: 20px;
+    }
+
+    #buscar {
+        width: 350px;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #aaa;
+        border-radius: 4px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+        table th {
+            background-color: #004a99;
+            color: white;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 10px;
+    }
+
+        ul li {
+            padding: 6px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+            ul li:hover {
+                background-color: #f0f0f0;
+            }
+</style>
+
+<p>
+    <a href="/Panel/Index">Volver al Panel</a>
+</p>
+
+<h2>Historial Académico de Estudiantes</h2>
+
+<input type="text" id="buscar" placeholder="Buscar por nombre o identificación..." />
+<ul id="resultados"></ul>
+
+<hr />
+
+<table id="tablaHistorial" border="1" cellpadding="5" cellspacing="0" style="display:none;">
+    <thead>
+        <tr>
+            <th>Curso</th>
+            <th>Cuatrimestre</th>
+            <th>Nota</th>
+            <th>Estado</th>
+            <th>Fecha Evaluación</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<canvas id="grafico" width="400" height="200" style="display:none;"></canvas>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    $("#buscar").on("keyup", function () {
+        var filtro = $(this).val();
+        if (filtro.length < 2) {
+            $("#resultados").empty();
+            return;
+        }
+
+        $.getJSON("/Historial/BuscarEstudiante", { filtro: filtro }, function (data) {
+            var html = "";
+            $.each(data, function (i, e) {
+                html += "<li><a href='#' class='selEst' data-id='" + e.Id + "'>" +
+                    e.Nombre + " (" + e.Identificacion + ")</a></li>";
+            });
+            $("#resultados").html(html);
+        });
+    });
+
+    $(document).on("click", ".selEst", function () {
+        var id = $(this).data("id");
+        $("#resultados").empty();
+
+        $.getJSON("/Historial/ObtenerHistorial", { estudianteId: id }, function (data) {
+            if (data.length === 0) {
+                alert("No se encontró historial académico.");
+                return;
+            }
+
+            $("#tablaHistorial").show();
+            $("#tablaHistorial tbody").empty();
+            var notas = [];
+            var cursos = [];
+
+            $.each(data, function (i, item) {
+                $("#tablaHistorial tbody").append("<tr>" +
+                    "<td>" + item.Curso + "</td>" +
+                    "<td>" + item.Cuatrimestre + "</td>" +
+                    "<td>" + item.Nota + "</td>" +
+                    "<td>" + item.Estado + "</td>" +
+                    "<td>" + formatearFecha(item.FechaEvaluacion) + "</td>" +
+                    "</tr>");
+
+                cursos.push(item.Curso);
+                notas.push(item.Nota);
+            });
+
+            $("#grafico").show();
+            var ctx = document.getElementById('grafico').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: cursos,
+                    datasets: [{
+                        label: 'Notas por curso',
+                        data: notas,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        });
+    });
+
+    function formatearFecha(fechaDotNet) {
+        if (!fechaDotNet) return "";
+        var match = /\/Date\((\d+)\)\//.exec(fechaDotNet);
+        if (match) {
+            var fecha = new Date(parseInt(match[1]));
+            return fecha.toLocaleString("es-CR", {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        return fechaDotNet;
+    }
+
+</script>

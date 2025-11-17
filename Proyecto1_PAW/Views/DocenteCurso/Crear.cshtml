@@ -1,0 +1,108 @@
+﻿@{
+    ViewBag.Title = "Asignar Docente a Curso";
+}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    h2 {
+        color: #004a99;
+        margin-bottom: 20px;
+    }
+
+    div {
+        max-width: 400px;
+        padding: 10px 0;
+    }
+
+    label {
+        display: block;
+        margin-top: 12px;
+        font-weight: bold;
+    }
+
+    select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-top: 5px;
+    }
+
+    button {
+        background-color: #004a99;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        margin-top: 15px;
+        cursor: pointer;
+    }
+
+        button:hover {
+            background-color: #0066cc;
+        }
+
+    #mensaje {
+        margin-top: 15px;
+        font-weight: bold;
+    }
+</style>
+
+<p>
+    <a href="/Panel/Index">Volver al Panel</a>
+</p>
+
+<h2>Asignar Docente a Curso</h2>
+
+<div>
+    <label>Docente:</label>
+    <select id="docenteId">
+        <option value="">Seleccione un docente</option>
+        @foreach (var d in ViewBag.Docentes)
+        {
+            <option value="@d.Value">@d.Text</option>
+        }
+    </select><br /><br />
+
+    <label>Curso:</label>
+    <select id="cursoId">
+        <option value="">Seleccione un curso</option>
+        @foreach (var c in ViewBag.Cursos)
+        {
+            <option value="@c.Value">@c.Text</option>
+        }
+    </select><br /><br />
+
+    <button id="btnAsignar">Asignar</button>
+</div>
+
+<p id="mensaje" style="color: red;"></p>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $("#btnAsignar").click(function () {
+        var docente = $("#docenteId").val();
+        var curso = $("#cursoId").val();
+
+        if (!docente || !curso) {
+            $("#mensaje").text("Debe seleccionar docente y curso.");
+            return;
+        }
+
+        $.ajax({
+            url: "/DocenteCurso/Crear",
+            type: "POST",
+            data: { docenteId: docente, cursoId: curso },
+            success: function (resp) {
+                alert(resp.message);
+                if (resp.success) window.location.href = "/DocenteCurso/Index";
+            },
+            error: function () {
+                $("#mensaje").text("Error en el servidor.");
+            }
+        });
+    });
+</script>

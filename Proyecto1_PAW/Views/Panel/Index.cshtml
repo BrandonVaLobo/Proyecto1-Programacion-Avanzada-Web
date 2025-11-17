@@ -68,13 +68,39 @@
     <h2>Panel principal del docente</h2>
 
     <p>Bienvenido, <strong>@usuario</strong></p>
+    @if (Session["Rol"] != null)
+    {
+        <p><strong>Rol actual:</strong> @Session["Rol"]</p>
+    }
 
     <hr />
 
     <ul>
-        <li><a href="/Estudiante/Crear">Registro de Estudiantes</a></li>
-        <li><a href="/Evaluacion/Index">Evaluación por Estudiante</a></li>
-        <li><a href="/Panel/Seguimiento">Panel de Seguimiento</a></li>
+        @if (Session["Rol"] != null)
+        {
+            var rol = Session["Rol"].ToString();
+
+            if (rol.Contains("Coordinador") || rol.Contains("Docente"))
+            {
+                <li><a href="/Estudiante/Crear">Registro de Estudiantes</a></li>
+                <li><a href="/Evaluacion/Index">Evaluación por Estudiante</a></li>
+                <li><a href="/Panel/Seguimiento">Panel de Seguimiento</a></li>
+                <li><a href="/Historial/Index">Historial Académico</a></li>
+            }
+
+            if (rol.Contains("Coordinador"))
+            {
+                <li><a href="/DocenteCurso/Index">Asignar Docentes</a></li>
+            }
+
+            if (rol.Contains("Administrador"))
+            {
+                <li><a href="/Curso/Index">Gestión de Cursos</a></li>
+                <li><a href="/Rol/Index">Gestión de Roles</a></li>
+                <li><a href="/Bitacora/Index">Ver Bitácora del Sistema</a></li>
+            }
+        }
+
         <li><a href="/Cuenta/Logout">Cerrar Sesión</a></li>
     </ul>
 

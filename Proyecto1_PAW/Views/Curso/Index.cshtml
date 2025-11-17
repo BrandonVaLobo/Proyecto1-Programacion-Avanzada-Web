@@ -1,0 +1,179 @@
+﻿@model List<Proyecto1_PAW.Models.CursoModel>
+@{
+    ViewBag.Title = "Gestión de Cursos";
+}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    h2 {
+        color: #004a99;
+        margin-bottom: 20px;
+    }
+
+    div {
+        max-width: 500px;
+    }
+
+    label {
+        display: block;
+        margin-top: 12px;
+        font-weight: bold;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-top: 5px;
+    }
+
+    button {
+        background-color: #004a99;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        margin-top: 15px;
+        cursor: pointer;
+    }
+
+        button:hover {
+            background-color: #0066cc;
+        }
+
+    table {
+        border-collapse: collapse;
+    }
+
+        table th,
+        table td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+    a.btnEliminar {
+        color: red;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+</style>
+
+<p>
+    <a href="/Panel/Index">Volver al Panel</a> 
+</p>
+
+<h2>Gestión de Cursos</h2>
+
+<div>
+    <label>Código:</label>
+    <input type="text" id="codigo" required />
+
+    <label>Nombre:</label>
+    <input type="text" id="nombre" required />
+
+    <label>Descripción:</label>
+    <input type="text" id="descripcion" />
+
+    <label>Créditos:</label>
+    <input type="number" id="creditos" value="4" min="1" max="10" />
+
+    <label>Cuatrimestre:</label>
+    <select id="cuatrimestre"></select>
+
+    <button id="btnGuardar">Crear curso</button>
+</div>
+
+<hr />
+
+<table border="1" style="width:100%; margin-top:10px;">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Créditos</th>
+            <th>Cuatrimestre</th>
+            <th>Fecha creación</th>
+            <th>Creado por</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Codigo</td>
+                <td>@c.Nombre</td>
+                <td>@c.Creditos</td>
+                <td>@c.CuatrimestreNombre</td>
+                <td>@c.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                <td>@c.CreadoPor</td>
+                <td><a href="/Curso/Editar/@c.Id">Editar</a></td>
+                <td><a class="btnEliminar" data-id="@c.Id">Eliminar</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        cargarCuatrimestres();
+
+        $("#btnGuardar").click(function () {
+            $.ajax({
+                url: "/Curso/Crear",
+                type: "POST",
+                data: {
+                    codigo: $("#codigo").val(),
+                    nombre: $("#nombre").val(),
+                    descripcion: $("#descripcion").val(),
+                    creditos: $("#creditos").val(),
+                    cuatrimestreId: $("#cuatrimestre").val()
+                },
+                success: function (resp) {
+                    alert(resp.message);
+                    if (resp.success) location.reload();
+                }
+            });
+        });
+    });
+
+    function cargarCuatrimestres() {
+        $.getJSON("/Estudiante/ListarCuatrimestres", function (data) {
+            $.each(data, function (i, item) {
+                $("#cuatrimestre").append('<option value="' + item.Id + '">' + item.Nombre + '</option>');
+            });
+        });
+    }
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).on("click", ".btnEliminar", function () {
+        const id = $(this).data("id");
+        if (confirm("⚠️ ¿Está seguro de eliminar este curso? Esta acción no se puede deshacer.")) {
+            $.ajax({
+                url: "/Curso/Eliminar",
+                type: "POST",
+                data: { id: id },
+                success: function (resp) {
+                    alert(resp.message);
+                    if (resp.success) location.reload();
+                },
+                error: function () {
+                    alert("Error al eliminar el curso.");
+                }
+            });
+        }
+    });
+</script>

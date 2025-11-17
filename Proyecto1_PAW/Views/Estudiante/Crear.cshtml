@@ -130,6 +130,14 @@
     </select>
     <span id="errCuatr"></span>
 
+    <label>Usuario*:</label>
+    <input type="text" id="usuario" name="usuario" />
+    <span id="errUsuario"></span>
+
+    <label>Contraseña*:</label>
+    <input type="text" id="contrasenia" name="contrasenia" />
+    <span id="errcontrasenia"></span>
+
     <div id="cursosContainer" style="display:none;">
         <strong>Cursos disponibles (marque los matriculados):</strong><br />
         <div id="listaCursos"></div>
@@ -180,6 +188,8 @@
             if (!re.test(email)) { $('#errCorreo').text('Formato inválido'); ok = false; }
         }
         if (!$('#cuatrimestre').val()) { $('#errCuatr').text('Seleccione cuatrimestre'); ok = false; }
+        if (!$('#usuario').val().trim()) { $('#errUsuario').text('Requerido'); ok = false; }
+        if (!$('#contrasenia').val().trim()) { $('#errContrasenia').text('Requerido'); ok = false; }
         return ok;
     }
 
@@ -199,6 +209,8 @@
             Distrito: $('#distrito').val().trim(),
             Correo: $('#correo').val().trim(),
             CuatrimestreId: parseInt($('#cuatrimestre').val()),
+            Usuario: $('#usuario').val().trim(),
+            Contrasena: $('#contrasenia').val().trim(),
             CursosMatriculados: cursos
         };
 

@@ -1,0 +1,68 @@
+﻿@model List<Proyecto1_PAW.Models.UsuarioRolViewModel>
+
+<style>
+    h2 {
+        color: #004a99;
+        margin-bottom: 15px;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 700px;
+        background-color: #fff;
+        margin-top: 10px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px 10px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f0f4ff;
+        font-weight: bold;
+    }
+
+    tr:hover {
+        background-color: #f7faff;
+    }
+
+    a {
+        color: #004a99;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+        a:hover {
+            text-decoration: underline;
+        }
+</style>
+
+<p>
+    <a href="/Panel/Index">Volver al Panel</a>
+</p>
+
+<h2>Usuarios y roles asignados</h2>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <tr>
+        <th>Docente</th>
+        <th>Roles</th>
+        <th>Acciones</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Nombre</td>
+            <td>@item.Roles</td>
+            <td>
+                <a href="/Rol/Asignar/@item.DocenteId">Editar Roles</a>
+            </td>
+        </tr>
+    }
+</table>
+
+<br />
+<a href="/Rol/Index">Volver a lista de roles</a>

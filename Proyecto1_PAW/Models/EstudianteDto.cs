@@ -16,6 +16,8 @@ namespace Proyecto1_PAW.Models
         public string Distrito { get; set; }
         public string Correo { get; set; }
         public int CuatrimestreId { get; set; }
+        public string Usuario { get; set; }
+        public string Contrasena { get; set; }
         public List<int> CursosMatriculados { get; set; } = new List<int>();
     }
 }

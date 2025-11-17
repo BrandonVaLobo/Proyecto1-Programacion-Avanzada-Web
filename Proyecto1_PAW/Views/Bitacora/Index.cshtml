@@ -1,0 +1,145 @@
+﻿@model IEnumerable<Proyecto1_PAW.Models.BitacoraModel>
+@{
+    ViewBag.Title = "Bitácora del Sistema";
+}
+
+<style>
+    form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 20px;
+        margin-bottom: 15px;
+    }
+
+        form label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        form input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        form button {
+            padding: 6px 12px;
+            background-color: #004a99;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+            form button:hover {
+                background-color: #0066cc;
+            }
+
+    #tablaBitacora {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+        #tablaBitacora th {
+            background-color: #004a99;
+            color: white;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #tablaBitacora td {
+            padding: 8px;
+        }
+
+        #tablaBitacora tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #tablaBitacora tr:hover {
+            background-color: #e0e7ef;
+        }
+
+    div a {
+        margin-right: 10px;
+        color: #004a99;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        div a:hover {
+            text-decoration: underline;
+        }
+</style>
+
+<p>
+    <a href="/Panel/Index">Volver al Panel</a>
+</p>
+
+<h2>Bitácora del Sistema</h2>
+
+<form method="get" action="/Bitacora/Index">
+    <label>Usuario:</label> <input type="text" name="usuario" value="@ViewBag.Usuario" />
+    <label>Módulo:</label> <input type="text" name="modulo" value="@ViewBag.Modulo" />
+    <label>Acción:</label> <input type="text" name="accion" value="@ViewBag.Accion" />
+    <label>Fecha:</label> <input type="date" name="fecha" value="@ViewBag.Fecha" />
+    <button type="submit">Filtrar</button>
+</form>
+
+<br />
+
+<table border="1" cellpadding="5" id="tablaBitacora">
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Acción</th>
+            <th>Módulo</th>
+            <th>Fecha</th>
+            <th>IP</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var b in Model)
+        {
+            <tr>
+                <td>@b.Usuario</td>
+                <td>@b.Accion</td>
+                <td>@b.Modulo</td>
+                <td>@b.Fecha</td>
+                <td>@b.IP</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div>
+    Página @ViewBag.Page de @ViewBag.TotalPages
+    <br />
+    @if (ViewBag.Page > 1)
+    {
+        <a href="@Url.Action("Index", new { page = ViewBag.Page - 1, usuario = ViewBag.Usuario, modulo = ViewBag.Modulo, accion = ViewBag.Accion, fecha = ViewBag.Fecha })">Anterior</a>
+    }
+    @if (ViewBag.Page < ViewBag.TotalPages)
+    {
+        <a href="@Url.Action("Index", new { page = ViewBag.Page + 1, usuario = ViewBag.Usuario, modulo = ViewBag.Modulo, accion = ViewBag.Accion, fecha = ViewBag.Fecha })">Siguiente</a>
+    }
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#tablaBitacora th').click(function () {
+            const index = $(this).index();
+            const rows = $('#tablaBitacora tbody tr').get();
+            rows.sort(function (a, b) {
+                const A = $(a).children('td').eq(index).text().toUpperCase();
+                const B = $(b).children('td').eq(index).text().toUpperCase();
+                return A.localeCompare(B);
+            });
+            $.each(rows, function (index, row) {
+                $('#tablaBitacora tbody').append(row);
+            });
+        });
+    });
+</script>

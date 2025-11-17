@@ -1,4 +1,5 @@
 ﻿using Proyecto1_PAW.Models;
+using Proyecto1_PAW.Utils;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -101,11 +102,14 @@ namespace Proyecto1_PAW.Controllers
                             cmd.ExecuteNonQuery();
                         }
 
+                        BitacoraHelper.Registrar(Session["DocenteActual"]?.ToString(), "Asigno estudiante Id " + dto.EstudianteId + " al curso Id " + dto.CursoId, "Curso");
+
                         tran.Commit();
                         return Json(new { success = true, message = "Evaluación registrada correctamente." });
                     }
                     catch
                     {
+                        BitacoraHelper.Registrar(Session["DocenteActual"]?.ToString(), "Error :: Asignar estudiante Id " + dto.EstudianteId + " al curso Id " + dto.CursoId, "Curso");
                         tran.Rollback();
                         return Json(new { success = false, message = "Error al guardar la evaluación." });
                     }
